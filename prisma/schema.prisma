@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -10,5 +5,54 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  directUrl = env("DIRECT_URL")
+}
+
+model Role {
+  roleId    Int      @id @default(autoincrement()) @map("role_id")
+  roleName  String   @unique @map("role_name") @db.VarChar(50)
+  users     User[]
+
+  @@map("roles")
+}
+
+model User {
+  userId        Int              @id @default(autoincrement()) @map("user_id")
+  name          String           @db.VarChar(100)
+  email         String           @unique @db.VarChar(255)
+  mobile        String           @db.VarChar(20)
+  salt          String           @db.VarChar(255)
+  passwordHash  String           @map("password_hash") @db.VarChar(255)
+  roleId        Int              @default(3) @map("role_id")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  role          Role             @relation(fields: [roleId], references: [roleId])
+  serviceRequests ServiceRequest[]
+  auditLogs     AuditLog[]
+
+  @@map("users")
+}
+
+model ServiceRequest {
+  requestId   Int      @id @default(autoincrement()) @map("request_id")
+  userId      Int      @map("user_id")
+  serviceType String   @map("service_type") @db.VarChar(100)
+  description String   @db.Text
+  feeAmount   Decimal  @default(0) @map("fee_amount") @db.Decimal(10, 2)
+  status      String   @default("pending") @db.VarChar(20)
+  officerNote String?  @map("officer_note") @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  user        User     @relation(fields: [userId], references: [userId])
+
+  @@map("service_requests")
+}
+
+model AuditLog {
+  logId     Int      @id @default(autoincrement()) @map("log_id")
+  userId    Int?     @map("user_id")
+  action    String   @db.VarChar(100)
+  metadata  Json?
+  timestamp DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [userId])
+
+  @@map("audit_logs")
 }
