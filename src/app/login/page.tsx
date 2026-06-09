@@ -31,13 +31,17 @@ export default function LoginPage() {
 
     const data = await res.json();
     setLoading(false);
-
     if (!res.ok) {
       setError(data.message || "Invalid credentials");
       return;
     }
 
-    router.push("/dashboard");
+    const roleRedirects: Record<string, string> = {
+      Citizen: "/dashboard/citizen",
+      Officer: "/dashboard/officer",
+      Admin:   "/dashboard/admin",
+    };
+    router.push(roleRedirects[data.user?.role] ?? "/dashboard");
   }
 
   return (
