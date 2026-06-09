@@ -18,6 +18,32 @@ export default function LoginPage() {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   }
 
+  // async function handleSubmit(e: React.FormEvent) {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   setError("");
+
+  //   const res = await fetch("/api/auth/login", {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify(form),
+  //   });
+
+  //   const data = await res.json();
+  //   setLoading(false);
+  //   if (!res.ok) {
+  //     setError(data.message || "Invalid credentials");
+  //     return;
+  //   }
+
+  //   const roleRedirects: Record<string, string> = {
+  //     Citizen: "/dashboard/citizen",
+  //     Officer: "/dashboard/officer",
+  //     Admin:   "/dashboard/admin",
+  //   };
+  //   router.push(roleRedirects[data.user?.role] ?? "/dashboard");
+  // }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -29,15 +55,24 @@ export default function LoginPage() {
       body: JSON.stringify(form),
     });
 
+    console.log("status:", res.status);
     const data = await res.json();
-    setLoading(false);
+    console.log("data:", data);
 
+    setLoading(false);
     if (!res.ok) {
       setError(data.message || "Invalid credentials");
       return;
     }
 
-    router.push("/dashboard");
+    const roleRedirects: Record<string, string> = {
+      Citizen: "/dashboard/citizen",
+      Officer: "/dashboard/officer",
+      Admin:   "/dashboard/admin",
+    };
+    console.log("role:", data.user?.role);
+    console.log("redirect to:", roleRedirects[data.user?.role] ?? "/dashboard");
+    router.push(roleRedirects[data.user?.role] ?? "/dashboard");
   }
 
   return (
